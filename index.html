@@ -13134,13 +13134,98 @@ div#notebook {
 <p>L’objectif de ce laboratoire est d’utiliser des méthodes d’apprentissage supervisé pour classifier des occurrences du mot interest selon leur sens : c’est la même tâche, avec les mêmes données, que le labo 6. Pour classifier les occurrences, on considère leur contexte (mots voisins), et on applique l’approche bayésienne vue en cours : on entraîne un classifieur à six classes (les six sens de interest annotés de 1 à 6) sur une partie des données et on le teste sur la partie restante.</p>
 <p>Dans ce laboratoire, on explore deux façons différentes de coder les traits (features) pour cette tâche. Dans les deux cas, on entraînera un NaiveBayesClassifier fourni par NLTK.1 Les deux façons sont :</p>
 <ol>
-<li>Constituer un vocabulaire des mots qui apparaissent dans le voisinage de interest et définir ces mots comme traits. Pour chaque occurrence de interest, on extrait la valeur de ces traits sous la forme {(‘rate’ : True), (‘in’ : False), … } et on ajoute la classe (de 1 à 6).</li>
-<li>Si word-1 est le mot précédant l’occurrence de interest, on définit comme traits word-n, …, word-2, word-1, word+1, word+2, …, word+n (une fenêtre de taille 2n autour de interest). Les valeurs possibles de ces traits sont cette fois-ci les mots observés, ou ‘NONE’ si la fenêtre dépasse les limites de la phrase. Pour chaque occurrence de interest, on extrait la valeur de ces traits sous la forme {(‘word-1’ : ‘his’), (‘word+1’ : ‘in’), … } et on ajoute la classe (de 1 à 6).</li>
+<li>Constituer un vocabulaire des mots qui apparaissent dans le voisinage de interest et définir ces mots comme traits. Pour chaque occurrence de interest, on extrait la valeur de ces traits sous la forme <code>{(‘rate’ : True), (‘in’ : False), … }</code> et on ajoute la classe (de 1 à 6).</li>
+<li>Si word-1 est le mot précédant l’occurrence de interest, on définit comme traits word-n, …, word-2, word-1, word+1, word+2, …, word+n (une fenêtre de taille 2n autour de interest). Les valeurs possibles de ces traits sont cette fois-ci les mots observés, ou ‘NONE’ si la fenêtre dépasse les limites de la phrase. Pour chaque occurrence de interest, on extrait la valeur de ces traits sous la forme <code>{(‘word-1’ : ‘his’), (‘word+1’ : ‘in’), … }</code> et on ajoute la classe (de 1 à 6).</li>
 </ol>
 <p>Dans les deux cas, il faut diviser les 2368 occurrences de interest en un jeu d’entraînement et un jeu de test, en respectant la proportion initiale de chaque sens. Puis on entraîne un classifieur bayésien naïf en respectant le format de données indiqué par NLTK2, et on teste la performance du classifieur entraîné. L’objectif est de trouver les paramètres qui conduisent aux meilleurs scores de WSD.</p>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Importation">Importation<a class="anchor-link" href="#Importation">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">nltk.tokenize</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Liste-des-noms-propres,-ponctuation-:">Liste des noms propres, ponctuation :<a class="anchor-link" href="#Liste-des-noms-propres,-ponctuation-:">&#182;</a></h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">stopWords_dlc</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&#39;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&#39;s&quot;</span><span class="p">,</span> <span class="s1">&#39;(&#39;</span><span class="p">,</span> <span class="s1">&#39;)&#39;</span><span class="p">,</span> <span class="s1">&#39;*interest&#39;</span><span class="p">,</span> <span class="s1">&#39;*interests&#39;</span><span class="p">,</span> <span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;;&#39;</span><span class="p">,</span> <span class="s1">&#39;At least one of the passed list is empty&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;USsr&#39;</span><span class="p">,</span><span class="s1">&#39;``&#39;</span><span class="p">,</span> <span class="s1">&#39;addwest&#39;</span><span class="p">,</span> <span class="s1">&#39;allianz&#39;</span><span class="p">,</span> <span class="s1">&#39;amoco&#39;</span><span class="p">,</span> <span class="s1">&#39;angell&#39;</span><span class="p">,</span> <span class="s1">&#39;angevine&#39;</span><span class="p">,</span> <span class="s1">&#39;anheuser&#39;</span><span class="p">,</span> <span class="s1">&#39;artra&#39;</span><span class="p">,</span> <span class="s1">&#39;avedisian&#39;</span><span class="p">,</span> <span class="s1">&#39;bancorp&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;bankamerica&#39;</span><span class="p">,</span> <span class="s1">&#39;bankshares&#39;</span><span class="p">,</span> <span class="s1">&#39;bavaria&#39;</span><span class="p">,</span> <span class="s1">&#39;beghin&#39;</span><span class="p">,</span> <span class="s1">&#39;bentsen&#39;</span><span class="p">,</span> <span class="s1">&#39;bernhard&#39;</span><span class="p">,</span> <span class="s1">&#39;berson&#39;</span><span class="p">,</span> <span class="s1">&#39;beyer&#39;</span><span class="p">,</span> <span class="s1">&#39;birnbaum&#39;</span><span class="p">,</span> <span class="s1">&#39;bnl&#39;</span><span class="p">,</span> <span class="s1">&#39;bolduc&#39;</span><span class="p">,</span> <span class="s1">&#39;bsn&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;buckley&#39;</span><span class="p">,</span> <span class="s1">&#39;bundesbank&#39;</span><span class="p">,</span> <span class="s1">&#39;caldor&#39;</span><span class="p">,</span>  <span class="s1">&#39;campeau&#39;</span><span class="p">,</span>  <span class="s1">&#39;canfor&#39;</span><span class="p">,</span>  <span class="s1">&#39;cathay&#39;</span><span class="p">,</span>  <span class="s1">&#39;cirino&#39;</span><span class="p">,</span>  <span class="s1">&#39;citic&#39;</span><span class="p">,</span>  <span class="s1">&#39;citicorp&#39;</span><span class="p">,</span>  <span class="s1">&#39;citiesabc&#39;</span><span class="p">,</span> <span class="s1">&#39;comsat&#39;</span><span class="p">,</span> <span class="s1">&#39;conagra&#39;</span><span class="p">,</span> <span class="s1">&#39;curragh&#39;</span><span class="p">,</span> <span class="s1">&#39;daimler&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;datatimes&#39;</span><span class="p">,</span> <span class="s1">&#39;dingell&#39;</span><span class="p">,</span> <span class="s1">&#39;doman&#39;</span><span class="p">,</span> <span class="s1">&#39;dougherty&#39;</span><span class="p">,</span> <span class="s1">&#39;drexel&#39;</span><span class="p">,</span><span class="s1">&#39;drg&#39;</span><span class="p">,</span> <span class="s1">&#39;ecpa&#39;</span><span class="p">,</span> <span class="s1">&#39;eiji&#39;</span><span class="p">,</span> <span class="s1">&#39;elsinore&#39;</span><span class="p">,</span> <span class="s1">&#39;erc&#39;</span><span class="p">,</span> <span class="s1">&#39;ericson&#39;</span><span class="p">,</span> <span class="s1">&#39;ernst&#39;</span><span class="p">,</span> <span class="s1">&#39;esop&#39;</span><span class="p">,</span> <span class="s1">&#39;esso&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;eubank&#39;</span><span class="p">,</span> <span class="s1">&#39;fasb&#39;</span><span class="p">,</span> <span class="s1">&#39;fii&#39;</span><span class="p">,</span> <span class="s1">&#39;geoffrey&#39;</span><span class="p">,</span> <span class="s1">&#39;giorgio&#39;</span><span class="p">,</span> <span class="s1">&#39;goloven&#39;</span><span class="p">,</span> <span class="s1">&#39;goodson&#39;</span><span class="p">,</span> <span class="s1">&#39;gorbachev&#39;</span><span class="p">,</span> <span class="s1">&#39;gosbank&#39;</span><span class="p">,</span> <span class="s1">&#39;grafil&#39;</span><span class="p">,</span> <span class="s1">&#39;harcourt&#39;</span><span class="p">,</span> <span class="s1">&#39;harriet&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;hca&#39;</span><span class="p">,</span> <span class="s1">&#39;healthvest&#39;</span><span class="p">,</span> <span class="s1">&#39;heyden&#39;</span><span class="p">,</span> <span class="s1">&#39;hirsch&#39;</span><span class="p">,</span> <span class="s1">&#39;honeywell&#39;</span><span class="p">,</span> <span class="s1">&#39;hornbeck&#39;</span><span class="p">,</span> <span class="s1">&#39;icahn&#39;</span><span class="p">,</span> <span class="s1">&#39;interlake&#39;</span><span class="p">,</span> <span class="s1">&#39;itel&#39;</span><span class="p">,</span> <span class="s1">&#39;itoh&#39;</span><span class="p">,</span> <span class="s1">&#39;jerrold&#39;</span><span class="p">,</span> <span class="s1">&#39;kalmus&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;kampen&#39;</span><span class="p">,</span><span class="s1">&#39;kaneb&#39;</span><span class="p">,</span> <span class="s1">&#39;kangyo&#39;</span><span class="p">,</span> <span class="s1">&#39;kenyon&#39;</span><span class="p">,</span> <span class="s1">&#39;keogh&#39;</span><span class="p">,</span> <span class="s1">&#39;kerkorian&#39;</span><span class="p">,</span> <span class="s1">&#39;kikkoman&#39;</span><span class="p">,</span> <span class="s1">&#39;kissinger&#39;</span><span class="p">,</span> <span class="s1">&#39;klauser&#39;</span><span class="p">,</span> <span class="s1">&#39;kochan&#39;</span><span class="p">,</span> <span class="s1">&#39;krause&#39;</span><span class="p">,</span> <span class="s1">&#39;laidlaw&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;lazar&#39;</span><span class="p">,</span> <span class="s1">&#39;lbo&#39;</span><span class="p">,</span> <span class="s1">&#39;lbos&#39;</span><span class="p">,</span> <span class="s1">&#39;leaseway&#39;</span><span class="p">,</span> <span class="s1">&#39;leber&#39;</span><span class="p">,</span> <span class="s1">&#39;lipper&#39;</span><span class="p">,</span> <span class="s1">&#39;lipsky&#39;</span><span class="p">,</span> <span class="s1">&#39;lipstein&#39;</span><span class="p">,</span> <span class="s1">&#39;lomas&#39;</span><span class="p">,</span> <span class="s1">&#39;lpl&#39;</span><span class="p">,</span> <span class="s1">&#39;makro&#39;</span><span class="p">,</span> <span class="s1">&#39;malizia&#39;</span><span class="p">,</span> <span class="s1">&#39;massey&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;matra&#39;</span><span class="p">,</span> <span class="s1">&#39;matuschka&#39;</span><span class="p">,</span> <span class="s1">&#39;maxus&#39;</span><span class="p">,</span> <span class="s1">&#39;mccall&#39;</span><span class="p">,</span> <span class="s1">&#39;mccaw&#39;</span><span class="p">,</span> <span class="s1">&#39;mclennan&#39;</span><span class="p">,</span> <span class="s1">&#39;mcorp&#39;</span><span class="p">,</span> <span class="s1">&#39;meritor&#39;</span><span class="p">,</span> <span class="s1">&#39;metromedia&#39;</span><span class="p">,</span> <span class="s1">&#39;mikulich&#39;</span><span class="p">,</span> <span class="s1">&#39;milacron&#39;</span><span class="p">,</span> <span class="s1">&#39;milford&#39;</span><span class="p">,</span> <span class="s1">&#39;milken&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;minorco&#39;</span><span class="p">,</span> <span class="s1">&#39;mitsui&#39;</span><span class="p">,</span> <span class="s1">&#39;mixte&#39;</span><span class="p">,</span> <span class="s1">&#39;mulford&#39;</span><span class="p">,</span> <span class="s1">&#39;nasd&#39;</span><span class="p">,</span> <span class="s1">&#39;ncnb&#39;</span><span class="p">,</span> <span class="s1">&#39;negus&#39;</span><span class="p">,</span> <span class="s1">&#39;nepalese&#39;</span><span class="p">,</span> <span class="s1">&#39;newfoundland&#39;</span><span class="p">,</span> <span class="s1">&#39;nippon&#39;</span><span class="p">,</span> <span class="s1">&#39;nobrega&#39;</span><span class="p">,</span> <span class="s1">&#39;northrop&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;nrm&#39;</span><span class="p">,</span><span class="s1">&#39;nyu&#39;</span><span class="p">,</span> <span class="s2">&quot;o&#39;malley&quot;</span><span class="p">,</span> <span class="s1">&#39;oakes&#39;</span><span class="p">,</span> <span class="s1">&#39;osborne&#39;</span><span class="p">,</span> <span class="s1">&#39;painewebber&#39;</span><span class="p">,</span> <span class="s1">&#39;panamanian&#39;</span><span class="p">,</span> <span class="s1">&#39;pantera&#39;</span><span class="p">,</span> <span class="s1">&#39;papandreou&#39;</span><span class="p">,</span> <span class="s1">&#39;parkos&#39;</span><span class="p">,</span> <span class="s1">&#39;paxus&#39;</span><span class="p">,</span> <span class="s1">&#39;pnc&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;poehl&#39;</span><span class="p">,</span> <span class="s1">&#39;quotron&#39;</span><span class="p">,</span> <span class="s1">&#39;racal&#39;</span><span class="p">,</span> <span class="s1">&#39;rapanelli&#39;</span><span class="p">,</span> <span class="s1">&#39;raytheon&#39;</span><span class="p">,</span> <span class="s1">&#39;refcorp&#39;</span><span class="p">,</span> <span class="s1">&#39;revco&#39;</span><span class="p">,</span> <span class="s1">&#39;richfield&#39;</span><span class="p">,</span> <span class="s1">&#39;rjr&#39;</span><span class="p">,</span> <span class="s1">&#39;rockwell&#39;</span><span class="p">,</span> <span class="s1">&#39;rostenkowski&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;rtc&#39;</span><span class="p">,</span> <span class="s1">&#39;ruiz&#39;</span><span class="p">,</span> <span class="s1">&#39;saatchi&#39;</span><span class="p">,</span> <span class="s1">&#39;sallie&#39;</span><span class="p">,</span> <span class="s1">&#39;salomon&#39;</span><span class="p">,</span> <span class="s1">&#39;sandner&#39;</span><span class="p">,</span> <span class="s1">&#39;satoshi&#39;</span><span class="p">,</span> <span class="s1">&#39;schlossberg&#39;</span><span class="p">,</span> <span class="s1">&#39;schlumberger&#39;</span><span class="p">,</span> <span class="s1">&#39;searby&#39;</span><span class="p">,</span> <span class="s1">&#39;seife&#39;</span><span class="p">,</span> <span class="s1">&#39;shapiro&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;silbert&#39;</span><span class="p">,</span> <span class="s1">&#39;sirrine&#39;</span><span class="p">,</span> <span class="s1">&#39;skase&#39;</span><span class="p">,</span> <span class="s1">&#39;smithkline&#39;</span><span class="p">,</span> <span class="s1">&#39;sotheby&#39;</span><span class="p">,</span> <span class="s1">&#39;sperandeo&#39;</span><span class="p">,</span> <span class="s1">&#39;spiotto&#39;</span><span class="p">,</span> <span class="s1">&#39;steinberg&#39;</span><span class="p">,</span> <span class="s1">&#39;swissair&#39;</span><span class="p">,</span> <span class="s1">&#39;sybase&#39;</span><span class="p">,</span> <span class="s1">&#39;takamori&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;takeshi&#39;</span><span class="p">,</span> <span class="s1">&#39;tci&#39;</span><span class="p">,</span> <span class="s1">&#39;telerate&#39;</span><span class="p">,</span> <span class="s1">&#39;textron&#39;</span><span class="p">,</span> <span class="s1">&#39;thermedics&#39;</span><span class="p">,</span> <span class="s1">&#39;tomsho&#39;</span><span class="p">,</span> <span class="s1">&#39;transco&#39;</span><span class="p">,</span> <span class="s1">&#39;trecker&#39;</span><span class="p">,</span> <span class="s1">&#39;tva&#39;</span><span class="p">,</span> <span class="s1">&#39;uic&#39;</span><span class="p">,</span> <span class="s1">&#39;unilever&#39;</span><span class="p">,</span> <span class="s1">&#39;unisys&#39;</span><span class="p">,</span> <span class="s1">&#39;unocal&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;viacom&#39;</span><span class="p">,</span> <span class="s1">&#39;vickers&#39;</span><span class="p">,</span> <span class="s1">&#39;viyella&#39;</span><span class="p">,</span> <span class="s1">&#39;vuitton&#39;</span><span class="p">,</span> <span class="s1">&#39;waigel&#39;</span><span class="p">,</span> <span class="s1">&#39;weinroth&#39;</span><span class="p">,</span> <span class="s1">&#39;westinghouse&#39;</span><span class="p">,</span> <span class="s1">&#39;weyerhaeuser&#39;</span><span class="p">,</span> <span class="s1">&#39;wisner&#39;</span><span class="p">,</span> <span class="s1">&#39;wyse&#39;</span><span class="p">,</span> <span class="s1">&#39;yeres&#39;</span><span class="p">,</span> <span class="s1">&#39;younkers&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;yukio&#39;</span><span class="p">,</span> <span class="s1">&#39;zurich&#39;</span><span class="p">,</span> <span class="s1">&#39;}&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">why&#39;</span><span class="p">,</span> <span class="s1">&#39;*interested&#39;</span><span class="p">,</span> <span class="s1">&#39;At least one of the passed list is empty&#39;</span><span class="p">,</span> <span class="s1">&#39;MGMNP&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">*&#39;</span><span class="p">,</span> <span class="s1">&#39;aganbegyan&#39;</span><span class="p">,</span> <span class="s1">&#39;aloys&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;alpert&#39;</span><span class="p">,</span><span class="s1">&#39;altimari&#39;</span><span class="p">,</span> <span class="s1">&#39;altman&#39;</span><span class="p">,</span> <span class="s1">&#39;ameritas&#39;</span><span class="p">,</span> <span class="s1">&#39;anctil&#39;</span><span class="p">,</span> <span class="s1">&#39;ankeny&#39;</span><span class="p">,</span> <span class="s1">&#39;anlage&#39;</span><span class="p">,</span> <span class="s1">&#39;arby&#39;</span><span class="p">,</span> <span class="s1">&#39;asarco&#39;</span><span class="p">,</span> <span class="s1">&#39;atb&#39;</span><span class="p">,</span> <span class="s1">&#39;atwood&#39;</span><span class="p">,</span> <span class="s1">&#39;avdel&#39;</span><span class="p">,</span> <span class="s1">&#39;aviva&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;balfour&#39;</span><span class="p">,</span> <span class="s1">&#39;bateman&#39;</span><span class="p">,</span><span class="s1">&#39;bddp&#39;</span><span class="p">,</span> <span class="s1">&#39;berardi&#39;</span><span class="p">,</span> <span class="s1">&#39;berbera&#39;</span><span class="p">,</span> <span class="s1">&#39;bianchi&#39;</span><span class="p">,</span> <span class="s1">&#39;biondi&#39;</span><span class="p">,</span> <span class="s1">&#39;birkel&#39;</span><span class="p">,</span> <span class="s1">&#39;blandings&#39;</span><span class="p">,</span> <span class="s1">&#39;bloomingdale&#39;</span><span class="p">,</span> <span class="s1">&#39;bloomingdales&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;blumenfeld&#39;</span><span class="p">,</span> <span class="s1">&#39;bodner&#39;</span><span class="p">,</span><span class="s1">&#39;bolar&#39;</span><span class="p">,</span> <span class="s1">&#39;borden&#39;</span><span class="p">,</span> <span class="s1">&#39;boskin&#39;</span><span class="p">,</span> <span class="s1">&#39;braitman&#39;</span><span class="p">,</span> <span class="s1">&#39;bramah&#39;</span><span class="p">,</span> <span class="s1">&#39;brasilia&#39;</span><span class="p">,</span> <span class="s1">&#39;briscoe&#39;</span><span class="p">,</span> <span class="s1">&#39;burbank&#39;</span><span class="p">,</span> <span class="s1">&#39;burnham&#39;</span><span class="p">,</span> <span class="s1">&#39;burrill&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;bynoe&#39;</span><span class="p">,</span> <span class="s1">&#39;cafferarelli&#39;</span><span class="p">,</span> <span class="s1">&#39;cambria&#39;</span><span class="p">,</span> <span class="s1">&#39;capel&#39;</span><span class="p">,</span> <span class="s1">&#39;cashin&#39;</span><span class="p">,</span> <span class="s1">&#39;chandross&#39;</span><span class="p">,</span> <span class="s1">&#39;ciminero&#39;</span><span class="p">,</span> <span class="s1">&#39;comerica&#39;</span><span class="p">,</span> <span class="s1">&#39;congolese&#39;</span><span class="p">,</span> <span class="s1">&#39;conlon&#39;</span><span class="p">,</span> <span class="s1">&#39;corbehem&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;cowles&#39;</span><span class="p">,</span> <span class="s1">&#39;crandall&#39;</span><span class="p">,</span> <span class="s1">&#39;crss&#39;</span><span class="p">,</span> <span class="s1">&#39;daberko&#39;</span><span class="p">,</span> <span class="s1">&#39;daiwa&#39;</span><span class="p">,</span> <span class="s1">&#39;darman&#39;</span><span class="p">,</span> <span class="s1">&#39;depcreciation&#39;</span><span class="p">,</span> <span class="s1">&#39;dimitris&#39;</span><span class="p">,</span> <span class="s1">&#39;dlj&#39;</span><span class="p">,</span> <span class="s1">&#39;donaldson&#39;</span><span class="p">,</span> <span class="s1">&#39;donoghue&#39;</span><span class="p">,</span> <span class="s1">&#39;dorrance&#39;</span><span class="p">,</span> <span class="s1">&#39;doughnut&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;dresdner&#39;</span><span class="p">,</span> <span class="s1">&#39;dreyer&#39;</span><span class="p">,</span> <span class="s1">&#39;edelson&#39;</span><span class="p">,</span> <span class="s1">&#39;elbaum&#39;</span><span class="p">,</span> <span class="s1">&#39;etr&#39;</span><span class="p">,</span> <span class="s1">&#39;farmington&#39;</span><span class="p">,</span> <span class="s1">&#39;faulding&#39;</span><span class="p">,</span> <span class="s1">&#39;fedders&#39;</span><span class="p">,</span> <span class="s1">&#39;ferranti&#39;</span><span class="p">,</span> <span class="s1">&#39;fio&#39;</span><span class="p">,</span> <span class="s1">&#39;firstsouth&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;franyo&#39;</span><span class="p">,</span> <span class="s1">&#39;fulbright&#39;</span><span class="p">,</span> <span class="s1">&#39;fyffes&#39;</span><span class="p">,</span> <span class="s1">&#39;gaubert&#39;</span><span class="p">,</span> <span class="s1">&#39;gec&#39;</span><span class="p">,</span> <span class="s1">&#39;gintel&#39;</span><span class="p">,</span> <span class="s1">&#39;goodison&#39;</span><span class="p">,</span> <span class="s1">&#39;goodwin&#39;</span><span class="p">,</span> <span class="s1">&#39;gould&#39;</span><span class="p">,</span> <span class="s1">&#39;gramm&#39;</span><span class="p">,</span> <span class="s1">&#39;grubman&#39;</span><span class="p">,</span> <span class="s1">&#39;gutermann&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;hammersmith&#39;</span><span class="p">,</span> <span class="s1">&#39;hanwa&#39;</span><span class="p">,</span> <span class="s1">&#39;hartzog&#39;</span><span class="p">,</span> <span class="s1">&#39;hawley&#39;</span><span class="p">,</span> <span class="s1">&#39;hbj&#39;</span><span class="p">,</span> <span class="s1">&#39;heilman&#39;</span><span class="p">,</span> <span class="s1">&#39;hennessey&#39;</span><span class="p">,</span> <span class="s1">&#39;hering&#39;</span><span class="p">,</span> <span class="s1">&#39;hibernia&#39;</span><span class="p">,</span> <span class="s1">&#39;holliston&#39;</span><span class="p">,</span> <span class="s1">&#39;howson&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;hubbell&#39;</span><span class="p">,</span> <span class="s1">&#39;hyman&#39;</span><span class="p">,</span> <span class="s1">&#39;iberian&#39;</span><span class="p">,</span> <span class="s1">&#39;ikegai&#39;</span><span class="p">,</span><span class="s1">&#39;intan&#39;</span><span class="p">,</span> <span class="s1">&#39;iras&#39;</span><span class="p">,</span> <span class="s1">&#39;itagaki&#39;</span><span class="p">,</span> <span class="s1">&#39;janson&#39;</span><span class="p">,</span> <span class="s1">&#39;jennison&#39;</span><span class="p">,</span> <span class="s1">&#39;jmb&#39;</span><span class="p">,</span> <span class="s1">&#39;jolla&#39;</span><span class="p">,</span> <span class="s1">&#39;jujo&#39;</span><span class="p">,</span> <span class="s1">&#39;kakita&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;kansan&#39;</span><span class="p">,</span> <span class="s1">&#39;kenji&#39;</span><span class="p">,</span> <span class="s1">&#39;kirkland&#39;</span><span class="p">,</span> <span class="s1">&#39;kohlberg&#39;</span><span class="p">,</span> <span class="s1">&#39;kondo&#39;</span><span class="p">,</span> <span class="s1">&#39;koskotas&#39;</span><span class="p">,</span> <span class="s1">&#39;krauss&#39;</span><span class="p">,</span> <span class="s1">&#39;kuala&#39;</span><span class="p">,</span> <span class="s1">&#39;kulani&#39;</span><span class="p">,</span> <span class="s1">&#39;landini&#39;</span><span class="p">,</span> <span class="s1">&#39;lawrenceville&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;lawrenson&#39;</span><span class="p">,</span> <span class="s1">&#39;lazard&#39;</span><span class="p">,</span> <span class="s1">&#39;lebow&#39;</span><span class="p">,</span> <span class="s1">&#39;lengwin&#39;</span><span class="p">,</span> <span class="s1">&#39;leningrad&#39;</span><span class="p">,</span> <span class="s1">&#39;leventhal&#39;</span><span class="p">,</span> <span class="s1">&#39;levine&#39;</span><span class="p">,</span> <span class="s1">&#39;levinson&#39;</span><span class="p">,</span> <span class="s1">&#39;levitt&#39;</span><span class="p">,</span> <span class="s1">&#39;lidgerwood&#39;</span><span class="p">,</span> <span class="s1">&#39;lightstone&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;lintas&#39;</span><span class="p">,</span> <span class="s1">&#39;liro&#39;</span><span class="p">,</span> <span class="s1">&#39;lockheed&#39;</span><span class="p">,</span> <span class="s1">&#39;lorenzo&#39;</span><span class="p">,</span> <span class="s1">&#39;ludcke&#39;</span><span class="p">,</span> <span class="s1">&#39;lufthansa&#39;</span><span class="p">,</span> <span class="s1">&#39;lupo&#39;</span><span class="p">,</span> <span class="s1">&#39;lustgarten&#39;</span><span class="p">,</span> <span class="s1">&#39;lyphomed&#39;</span><span class="p">,</span> <span class="s1">&#39;mackenzie&#39;</span><span class="p">,</span> <span class="s1">&#39;maclean&#39;</span><span class="p">,</span> <span class="s1">&#39;malato&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;mandle&#39;</span><span class="p">,</span> <span class="s1">&#39;matsuda&#39;</span><span class="p">,</span> <span class="s1">&#39;mcdermott&#39;</span><span class="p">,</span><span class="s1">&#39;mcgraw&#39;</span><span class="p">,</span> <span class="s1">&#39;mckusick&#39;</span><span class="p">,</span> <span class="s1">&#39;mehl&#39;</span><span class="p">,</span> <span class="s1">&#39;menem&#39;</span><span class="p">,</span> <span class="s1">&#39;merksamer&#39;</span><span class="p">,</span> <span class="s1">&#39;merritt&#39;</span><span class="p">,</span> <span class="s1">&#39;messaggero&#39;</span><span class="p">,</span> <span class="s1">&#39;mgmua&#39;</span><span class="p">,</span> <span class="s1">&#39;minincomputer&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;minpeco&#39;</span><span class="p">,</span> <span class="s1">&#39;mitsuoka&#39;</span><span class="p">,</span> <span class="s1">&#39;mnb&#39;</span><span class="p">,</span> <span class="s1">&#39;monieson&#39;</span><span class="p">,</span> <span class="s1">&#39;morningstar&#39;</span><span class="p">,</span> <span class="s1">&#39;murata&#39;</span><span class="p">,</span> <span class="s1">&#39;mvestment&#39;</span><span class="p">,</span> <span class="s1">&#39;nakazato&#39;</span><span class="p">,</span> <span class="s1">&#39;natwest&#39;</span><span class="p">,</span> <span class="s1">&#39;newsedge&#39;</span><span class="p">,</span> <span class="s1">&#39;nisshin&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;nzi&#39;</span><span class="p">,</span> <span class="s2">&quot;o&#39;neill&quot;</span><span class="p">,</span> <span class="s1">&#39;olivetti&#39;</span><span class="p">,</span> <span class="s1">&#39;orgotein&#39;</span><span class="p">,</span> <span class="s1">&#39;ormat&#39;</span><span class="p">,</span> <span class="s1">&#39;packwood&#39;</span><span class="p">,</span> <span class="s1">&#39;pamour&#39;</span><span class="p">,</span> <span class="s1">&#39;parsow&#39;</span><span class="p">,</span> <span class="s1">&#39;pemberton&#39;</span><span class="p">,</span> <span class="s1">&#39;perlman&#39;</span><span class="p">,</span> <span class="s1">&#39;phelan&#39;</span><span class="p">,</span> <span class="s1">&#39;pocklington&#39;</span><span class="p">,</span> <span class="s1">&#39;pomicino&#39;</span><span class="p">,</span> <span class="s1">&#39;pountain&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;prapas&#39;</span><span class="p">,</span> <span class="s1">&#39;prentice&#39;</span><span class="p">,</span><span class="s1">&#39;primerit&#39;</span><span class="p">,</span> <span class="s1">&#39;qintex&#39;</span><span class="p">,</span> <span class="s1">&#39;quadrum&#39;</span><span class="p">,</span> <span class="s1">&#39;rainman&#39;</span><span class="p">,</span> <span class="s1">&#39;ralphs&#39;</span><span class="p">,</span> <span class="s1">&#39;recommendatons&#39;</span><span class="p">,</span> <span class="s1">&#39;redford&#39;</span><span class="p">,</span> <span class="s1">&#39;repsol&#39;</span><span class="p">,</span> <span class="s1">&#39;resler&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;rodale&#39;</span><span class="p">,</span> <span class="s1">&#39;rosen&#39;</span><span class="p">,</span> <span class="s1">&#39;rothschild&#39;</span><span class="p">,</span><span class="s1">&#39;roulac&#39;</span><span class="p">,</span> <span class="s1">&#39;ruderman&#39;</span><span class="p">,</span> <span class="s1">&#39;ruskin&#39;</span><span class="p">,</span> <span class="s1">&#39;sabre&#39;</span><span class="p">,</span> <span class="s1">&#39;sakowitz&#39;</span><span class="p">,</span> <span class="s1">&#39;salerno&#39;</span><span class="p">,</span> <span class="s1">&#39;sanyo&#39;</span><span class="p">,</span> <span class="s1">&#39;savaiko&#39;</span><span class="p">,</span> <span class="s1">&#39;schering&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;schumer&#39;</span><span class="p">,</span> <span class="s1">&#39;scowcroft&#39;</span><span class="p">,</span> <span class="s1">&#39;seabrook&#39;</span><span class="p">,</span> <span class="s1">&#39;seiders&#39;</span><span class="p">,</span> <span class="s1">&#39;seidman&#39;</span><span class="p">,</span> <span class="s1">&#39;shearson&#39;</span><span class="p">,</span> <span class="s1">&#39;sheraton&#39;</span><span class="p">,</span> <span class="s1">&#39;shirer&#39;</span><span class="p">,</span> <span class="s1">&#39;southbrook&#39;</span><span class="p">,</span> <span class="s1">&#39;sovran&#39;</span><span class="p">,</span> <span class="s1">&#39;squibb&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;stenholm&#39;</span><span class="p">,</span> <span class="s1">&#39;stevric&#39;</span><span class="p">,</span> <span class="s1">&#39;straszheim&#39;</span><span class="p">,</span> <span class="s1">&#39;sumita&#39;</span><span class="p">,</span> <span class="s1">&#39;superconcentrated&#39;</span><span class="p">,</span> <span class="s1">&#39;sykes&#39;</span><span class="p">,</span> <span class="s1">&#39;taft&#39;</span><span class="p">,</span> <span class="s1">&#39;telemunchen&#39;</span><span class="p">,</span> <span class="s1">&#39;terrizzi&#39;</span><span class="p">,</span> <span class="s1">&#39;tietmeyer&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;trelleborg&#39;</span><span class="p">,</span> <span class="s1">&#39;tvsm&#39;</span><span class="p">,</span> <span class="s1">&#39;tvx&#39;</span><span class="p">,</span> <span class="s1">&#39;upham&#39;</span><span class="p">,</span> <span class="s1">&#39;vargas&#39;</span><span class="p">,</span> <span class="s1">&#39;viag&#39;</span><span class="p">,</span> <span class="s1">&#39;visx&#39;</span><span class="p">,</span> <span class="s1">&#39;wachtel&#39;</span><span class="p">,</span> <span class="s1">&#39;waterhouse&#39;</span><span class="p">,</span> <span class="s1">&#39;weissman&#39;</span><span class="p">,</span> <span class="s1">&#39;whitaker&#39;</span><span class="p">,</span> <span class="s1">&#39;whitehall&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;whittaker&#39;</span><span class="p">,</span> <span class="s1">&#39;wyss&#39;</span><span class="p">,</span> <span class="s1">&#39;zoete&#39;</span><span class="p">,</span> <span class="s1">&#39;{&#39;</span><span class="p">,</span>  <span class="s2">&quot;&#39;goodison&quot;</span><span class="p">,</span> <span class="s2">&quot;&#39;who&quot;</span><span class="p">,</span> <span class="s1">&#39;At least one of the passed list is empty&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">*&#39;</span><span class="p">,</span> <span class="s1">&#39;algraphy&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;alsthom&#39;</span><span class="p">,</span> <span class="s1">&#39;alun&#39;</span><span class="p">,</span> <span class="s1">&#39;anschluss&#39;</span><span class="p">,</span> <span class="s1">&#39;bache&#39;</span><span class="p">,</span> <span class="s1">&#39;baer&#39;</span><span class="p">,</span> <span class="s1">&#39;banxquote&#39;</span><span class="p">,</span> <span class="s1">&#39;bischofberger&#39;</span><span class="p">,</span> <span class="s1">&#39;caci&#39;</span><span class="p">,</span> <span class="s2">&quot;d&#39;amiante&quot;</span><span class="p">,</span> <span class="s1">&#39;economidis&#39;</span><span class="p">,</span> <span class="s1">&#39;eichler&#39;</span><span class="p">,</span> <span class="s1">&#39;eiffel&#39;</span><span class="p">,</span><span class="s1">&#39;entergy&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;eurobelge&#39;</span><span class="p">,</span> <span class="s1">&#39;exploracion&#39;</span><span class="p">,</span> <span class="s1">&#39;feldemuehle&#39;</span><span class="p">,</span> <span class="s1">&#39;ferruzzi&#39;</span><span class="p">,</span> <span class="s1">&#39;freres&#39;</span><span class="p">,</span> <span class="s1">&#39;galbraith&#39;</span><span class="p">,</span> <span class="s1">&#39;gmb&#39;</span><span class="p">,</span> <span class="s1">&#39;goldwyn&#39;</span><span class="p">,</span> <span class="s1">&#39;hutchinson&#39;</span><span class="p">,</span> <span class="s1">&#39;jaworski&#39;</span><span class="p">,</span> <span class="s1">&#39;jerrico&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;jvcvictor&#39;</span><span class="p">,</span> <span class="s1">&#39;kokusai&#39;</span><span class="p">,</span> <span class="s1">&#39;kravis&#39;</span><span class="p">,</span> <span class="s1">&#39;leval&#39;</span><span class="p">,</span> <span class="s1">&#39;llosa&#39;</span><span class="p">,</span> <span class="s1">&#39;lufkin&#39;</span><span class="p">,</span> <span class="s1">&#39;lumpur&#39;</span><span class="p">,</span> <span class="s1">&#39;maclaine&#39;</span><span class="p">,</span> <span class="s1">&#39;maffei&#39;</span><span class="p">,</span> <span class="s1">&#39;matsushita&#39;</span><span class="p">,</span> <span class="s1">&#39;mca&#39;</span><span class="p">,</span> <span class="s1">&#39;moleculon&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;neiman&#39;</span><span class="p">,</span> <span class="s1">&#39;normura&#39;</span><span class="p">,</span> <span class="s1">&#39;ocn&#39;</span><span class="p">,</span> <span class="s1">&#39;plough&#39;</span><span class="p">,</span> <span class="s1">&#39;proudfoot&#39;</span><span class="p">,</span> <span class="s1">&#39;puna&#39;</span><span class="p">,</span> <span class="s1">&#39;rudman&#39;</span><span class="p">,</span> <span class="s1">&#39;seger&#39;</span><span class="p">,</span> <span class="s1">&#39;sigoloff&#39;</span><span class="p">,</span> <span class="s1">&#39;sithe&#39;</span><span class="p">,</span> <span class="s1">&#39;stateswest&#39;</span><span class="p">,</span> <span class="s1">&#39;swasey&#39;</span><span class="p">,</span><span class="s1">&#39;syncor&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;synthetical&#39;</span><span class="p">,</span> <span class="s1">&#39;takashimaya&#39;</span><span class="p">,</span> <span class="s1">&#39;taunton&#39;</span><span class="p">,</span><span class="s1">&#39;treausry&#39;</span><span class="p">,</span> <span class="s1">&#39;trupin&#39;</span><span class="p">,</span> <span class="s1">&#39;utsunomiya&#39;</span><span class="p">,</span> <span class="s1">&#39;warburg&#39;</span><span class="p">,</span> <span class="s1">&#39;wedd&#39;</span><span class="p">,</span> <span class="s1">&#39;wyo&#39;</span><span class="p">,</span> <span class="s1">&#39;yellowknife&#39;</span><span class="p">,</span>
+ <span class="s2">&quot;At least one of the passed list is empty&quot;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">*&#39;</span><span class="p">,</span> <span class="s1">&#39;bradstreet&#39;</span><span class="p">,</span> <span class="s1">&#39;economdis&#39;</span><span class="p">,</span> <span class="s1">&#39;forstmann&#39;</span><span class="p">,</span> <span class="s1">&#39;heileman&#39;</span><span class="p">,</span> <span class="s1">&#39;lorimar&#39;</span><span class="p">,</span> <span class="s1">&#39;luxembourg&#39;</span><span class="p">,</span> <span class="s1">&#39;pamorex&#39;</span><span class="p">,</span>
+ <span class="s1">&#39;saks&#39;</span><span class="p">,</span> <span class="s1">&#39;turben&#39;</span><span class="p">,</span> <span class="s1">&#39;wassily&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">*&#39;</span><span class="p">,</span> <span class="s1">&#39;leontief&#39;</span><span class="p">,</span> <span class="s1">&#39;rauscher&#39;</span><span class="p">,</span> <span class="s1">&#39;telepictures&#39;</span><span class="p">,</span> <span class="s1">&#39;interest_&#39;</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">]</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13166,19 +13251,54 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="1.-Le-fichier-de-donn&#233;es-se-trouve-&#224;-http://www.d.umn.edu/~tpederse/data.html-&#8211;-chercher-&#171;-interest-&#187;-vers-la-fin-de-la-page,-et-prendre-le-fichier-marqu&#233;-comme-&#171;-original-format-without-POS-tags-&#187;-(le-m&#234;me-qu&#8217;au-labo-6).-Lire-le-fichier-et-g&#233;n&#233;rer-une-liste-de-listes-de-mots-(une-liste-par-phrase)-appel&#233;e-tokenized_sentences.">1. Le fichier de donn&#233;es se trouve &#224; <a href="http://www.d.umn.edu/~tpederse/data.html">http://www.d.umn.edu/~tpederse/data.html</a> &#8211; chercher &#171; interest &#187; vers la fin de la page, et prendre le fichier marqu&#233; comme &#171; original format without POS tags &#187; (le m&#234;me qu&#8217;au labo 6). Lire le fichier et g&#233;n&#233;rer une liste de listes de mots (une liste par phrase) appel&#233;e tokenized_sentences.<a class="anchor-link" href="#1.-Le-fichier-de-donn&#233;es-se-trouve-&#224;-http://www.d.umn.edu/~tpederse/data.html-&#8211;-chercher-&#171;-interest-&#187;-vers-la-fin-de-la-page,-et-prendre-le-fichier-marqu&#233;-comme-&#171;-original-format-without-POS-tags-&#187;-(le-m&#234;me-qu&#8217;au-labo-6).-Lire-le-fichier-et-g&#233;n&#233;rer-une-liste-de-listes-de-mots-(une-liste-par-phrase)-appel&#233;e-tokenized_sentences.">&#182;</a></h4>
+<h4 id="1.-Le-fichier-de-donn&#233;es-se-trouve-&#224;-http://www.d.umn.edu/~tpederse/data.html-&#8211;-chercher-&#171;-interest-&#187;-vers-la-fin-de-la-page,-et-prendre-le-fichier-marqu&#233;-comme-&#171;-original-format-without-POS-tags-&#187;-(le-m&#234;me-qu&#8217;au-labo-6).-Lire-le-fichier-et-g&#233;n&#233;rer-une-liste-de-listes-de-mots-(une-liste-par-phrase)-appel&#233;e-tokenized_sentences.">1. Le fichier de donn&#233;es se trouve &#224; <a href="http://www.d.umn.edu/~tpederse/data.html">http://www.d.umn.edu/~tpederse/data.html</a> &#8211; chercher &#171; interest &#187; vers la fin de la page, et prendre le fichier marqu&#233; comme &#171; original format without POS tags &#187; (le m&#234;me qu&#8217;au labo 6). Lire le fichier et g&#233;n&#233;rer une liste de listes de mots (une liste par phrase) appel&#233;e <code>tokenized_sentences</code>.<a class="anchor-link" href="#1.-Le-fichier-de-donn&#233;es-se-trouve-&#224;-http://www.d.umn.edu/~tpederse/data.html-&#8211;-chercher-&#171;-interest-&#187;-vers-la-fin-de-la-page,-et-prendre-le-fichier-marqu&#233;-comme-&#171;-original-format-without-POS-tags-&#187;-(le-m&#234;me-qu&#8217;au-labo-6).-Lire-le-fichier-et-g&#233;n&#233;rer-une-liste-de-listes-de-mots-(une-liste-par-phrase)-appel&#233;e-tokenized_sentences.">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">filepath</span> <span class="o">=</span> <span class="s1">&#39;data/interest-original.txt&#39;</span> 
+
+<span class="k">try</span><span class="p">:</span>  
+    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">raw_sentences</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">raw_sentences</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">raw_sentences</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;`&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">raw_sentences</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\&#39;</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">raw_sentences</span> <span class="o">=</span> <span class="n">raw_sentences</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">$$</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>  
+    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+<span class="n">tokenized_sentences</span> <span class="o">=</span> <span class="p">[</span><span class="n">nltk</span><span class="o">.</span><span class="n">word_tokenize</span><span class="p">(</span><span class="n">sent</span><span class="p">)</span> <span class="k">for</span> <span class="n">sent</span> <span class="ow">in</span> <span class="n">raw_sentences</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">tokenized_sentences</span><span class="p">)</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[3]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>2368</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13186,19 +13306,118 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="2.-D&#233;finir-une-variable-window_size,-par-exemple-&#233;gale-&#224;-3-(on-la-fera-varier-plus-tard),-et-une-liste-vide-de-mots-word_list.-Parcourir-les-tokenized_sentences-et-pour-chaque-phrase-ajouter-les-mots-voisins-de-interest-(i.e.-situ&#233;s-&#224;-une-distance-inf&#233;rieure-ou-&#233;gale-&#224;-window_size)-dans-la-liste-de-mots-word_list.-Combien-de-mots-contient-celle-ci-&#224;-la-fin-?-Tokens-ou-types-?">2. D&#233;finir une variable window_size, par exemple &#233;gale &#224; 3 (on la fera varier plus tard), et une liste vide de mots word_list. Parcourir les tokenized_sentences et pour chaque phrase ajouter les mots voisins de interest (i.e. situ&#233;s &#224; une distance inf&#233;rieure ou &#233;gale &#224; window_size) dans la liste de mots word_list. Combien de mots contient celle-ci &#224; la fin ? Tokens ou types ?<a class="anchor-link" href="#2.-D&#233;finir-une-variable-window_size,-par-exemple-&#233;gale-&#224;-3-(on-la-fera-varier-plus-tard),-et-une-liste-vide-de-mots-word_list.-Parcourir-les-tokenized_sentences-et-pour-chaque-phrase-ajouter-les-mots-voisins-de-interest-(i.e.-situ&#233;s-&#224;-une-distance-inf&#233;rieure-ou-&#233;gale-&#224;-window_size)-dans-la-liste-de-mots-word_list.-Combien-de-mots-contient-celle-ci-&#224;-la-fin-?-Tokens-ou-types-?">&#182;</a></h4>
+<h4 id="2.-D&#233;finir-une-variable-window_size,-par-exemple-&#233;gale-&#224;-3-(on-la-fera-varier-plus-tard),-et-une-liste-vide-de-mots-word_list.-Parcourir-les-tokenized_sentences-et-pour-chaque-phrase-ajouter-les-mots-voisins-de-interest-(i.e.-situ&#233;s-&#224;-une-distance-inf&#233;rieure-ou-&#233;gale-&#224;-window_size)-dans-la-liste-de-mots-word_list.-Combien-de-mots-contient-celle-ci-&#224;-la-fin-?-Tokens-ou-types-?">2. D&#233;finir une variable <code>window_size</code>, par exemple &#233;gale &#224; 3 (on la fera varier plus tard), et une liste vide de mots <code>word_list</code>. Parcourir les <code>tokenized_sentences</code> et pour chaque phrase ajouter les mots voisins de interest (i.e. situ&#233;s &#224; une distance inf&#233;rieure ou &#233;gale &#224; <code>window_size</code>) dans la liste de mots <code>word_list</code>. Combien de mots contient celle-ci &#224; la fin ? Tokens ou types ?<a class="anchor-link" href="#2.-D&#233;finir-une-variable-window_size,-par-exemple-&#233;gale-&#224;-3-(on-la-fera-varier-plus-tard),-et-une-liste-vide-de-mots-word_list.-Parcourir-les-tokenized_sentences-et-pour-chaque-phrase-ajouter-les-mots-voisins-de-interest-(i.e.-situ&#233;s-&#224;-une-distance-inf&#233;rieure-ou-&#233;gale-&#224;-window_size)-dans-la-liste-de-mots-word_list.-Combien-de-mots-contient-celle-ci-&#224;-la-fin-?-Tokens-ou-types-?">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">windows_size</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">word_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">[],</span> <span class="mi">2</span><span class="p">:</span> <span class="p">[],</span> <span class="mi">3</span><span class="p">:</span> <span class="p">[],</span> <span class="mi">4</span><span class="p">:</span> <span class="p">[],</span> <span class="mi">5</span><span class="p">:</span> <span class="p">[],</span> <span class="mi">6</span><span class="p">:</span> <span class="p">[]}</span>
+
+<span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="p">(</span><span class="n">tokenized_sentences</span><span class="p">):</span>  
+    <span class="n">i</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">current_sens</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">def_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">):</span>
+        <span class="n">current_sens</span> <span class="o">=</span> <span class="n">def_i</span>
+        <span class="k">if</span> <span class="s2">&quot;interest_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">def_i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sentence</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;interest_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">def_i</span><span class="p">))</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="s2">&quot;interests_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">def_i</span><span class="p">)</span> <span class="ow">in</span> <span class="n">sentence</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">sentence</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;interests_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">def_i</span><span class="p">))</span>
+            <span class="k">break</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="n">windows_size</span><span class="p">,</span> <span class="n">windows_size</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">current_index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="n">current_index</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">current_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sentence</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">word_dict</span><span class="p">[</span><span class="n">current_sens</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sentence</span><span class="p">[</span><span class="n">current_index</span><span class="p">])</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">somme</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">vocabulary</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="n">word_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">7</span><span class="p">):</span>
+    <span class="n">number_of_point</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">current_list</span> <span class="o">=</span> <span class="n">word_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;word_list </span><span class="si">{}</span><span class="s2"> : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_list</span><span class="p">)))</span>
+    <span class="n">somme</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">current_list</span><span class="p">:</span>
+        <span class="n">vocabulary</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+        <span class="n">word_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>word_list 1 : 1951
+word_list 2 : 65
+word_list 3 : 309
+word_list 4 : 933
+word_list 5 : 2773
+word_list 6 : 6759
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nombre total d&#39;occurances : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">somme</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;nombre de mots différents : </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vocabulary</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>nombre total d&#39;occurances : 12790
+nombre de mots différents : 2479
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -13206,22 +13425,115 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="3.-&#192;-l&#8217;aide-d&#8217;un-objet-NLTK-de-type-FreqDist,-s&#233;lectionner-parmi-les-mots-de-word_list-les-N-plus-fr&#233;quents,-dans-une-nouvelle-liste-appel&#233;e-vocabulary-(p.ex.-N-=-500,-mais-on-le-fera-varier).-Affichez-les-50-mots-les-plus-fr&#233;quents.-Est-ce-une-bonne-id&#233;e-d&#8217;enlever-les-stopwords-?">3. &#192; l&#8217;aide d&#8217;un objet NLTK de type FreqDist, s&#233;lectionner parmi les mots de word_list les N plus fr&#233;quents, dans une nouvelle liste appel&#233;e vocabulary (p.ex. N = 500, mais on le fera varier). Affichez les 50 mots les plus fr&#233;quents. Est-ce une bonne id&#233;e d&#8217;enlever les stopwords ?<a class="anchor-link" href="#3.-&#192;-l&#8217;aide-d&#8217;un-objet-NLTK-de-type-FreqDist,-s&#233;lectionner-parmi-les-mots-de-word_list-les-N-plus-fr&#233;quents,-dans-une-nouvelle-liste-appel&#233;e-vocabulary-(p.ex.-N-=-500,-mais-on-le-fera-varier).-Affichez-les-50-mots-les-plus-fr&#233;quents.-Est-ce-une-bonne-id&#233;e-d&#8217;enlever-les-stopwords-?">&#182;</a></h4>
+<h4 id="3.-&#192;-l&#8217;aide-d&#8217;un-objet-NLTK-de-type-FreqDist,-s&#233;lectionner-parmi-les-mots-de-word_list-les-N-plus-fr&#233;quents,-dans-une-nouvelle-liste-appel&#233;e-vocabulary-(p.ex.-N-=-500,-mais-on-le-fera-varier).-Affichez-les-50-mots-les-plus-fr&#233;quents.-Est-ce-une-bonne-id&#233;e-d&#8217;enlever-les-stopwords-?">3. &#192; l&#8217;aide d&#8217;un objet <code>NLTK</code> de type <code>FreqDist</code>, s&#233;lectionner parmi les mots de <code>word_list</code> les <code>N</code> plus fr&#233;quents, dans une nouvelle liste appel&#233;e <code>vocabulary</code> (p.ex. <code>N = 500</code>, mais on le fera varier). Affichez les 50 mots les plus fr&#233;quents. Est-ce une bonne id&#233;e d&#8217;enlever les stopwords ?<a class="anchor-link" href="#3.-&#192;-l&#8217;aide-d&#8217;un-objet-NLTK-de-type-FreqDist,-s&#233;lectionner-parmi-les-mots-de-word_list-les-N-plus-fr&#233;quents,-dans-une-nouvelle-liste-appel&#233;e-vocabulary-(p.ex.-N-=-500,-mais-on-le-fera-varier).-Affichez-les-50-mots-les-plus-fr&#233;quents.-Est-ce-une-bonne-id&#233;e-d&#8217;enlever-les-stopwords-?">&#182;</a></h4>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N</span> <span class="o">=</span> <span class="mi">500</span>
+<span class="n">vocabulary</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">FreqDist</span><span class="p">(</span><span class="n">word_list</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">nltk</span><span class="o">.</span><span class="n">FreqDist</span><span class="p">(</span><span class="n">word_list</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[(&#39;in&#39;, 762),
+ (&#39;rates&#39;, 624),
+ (&#39;the&#39;, 606),
+ (&#39;and&#39;, 401),
+ (&#39;to&#39;, 373),
+ (&#39;of&#39;, 330),
+ (&#39;a&#39;, 273),
+ (&#39;on&#39;, 170),
+ (&#39;rate&#39;, 139),
+ (&#39;s&#39;, 136),
+ (&#39;%&#39;, 135),
+ (&#39;its&#39;, 132),
+ (&#39;payments&#39;, 112),
+ (&#39;that&#39;, 104),
+ (&#39;are&#39;, 102),
+ (&#39;has&#39;, 94),
+ (&#39;for&#39;, 86),
+ (&#39;with&#39;, 83),
+ (&#39;lower&#39;, 83),
+ (&#39;an&#39;, 81),
+ (&#39;is&#39;, 72),
+ (&#39;by&#39;, 69),
+ (&#39;have&#39;, 68),
+ (&#39;will&#39;, 65),
+ (&#39;at&#39;, 64),
+ (&#39;high&#39;, 63),
+ (&#39;from&#39;, 61),
+ (&#39;company&#39;, 50),
+ (&#39;their&#39;, 48),
+ (&#39;or&#39;, 48),
+ (&#39;annual&#39;, 48),
+ (&#39;us&#39;, 47),
+ (&#39;which&#39;, 47),
+ (&#39;short&#39;, 47),
+ (&#39;minority&#39;, 46),
+ (&#39;foreign&#39;, 46),
+ (&#39;said&#39;, 43),
+ (&#39;higher&#39;, 43),
+ (&#39;as&#39;, 42),
+ (&#39;bonds&#39;, 42),
+ (&#39;income&#39;, 42),
+ (&#39;nt&#39;, 41),
+ (&#39;other&#39;, 41),
+ (&#39;it&#39;, 39),
+ (&#39;pay&#39;, 39),
+ (&#39;be&#39;, 35),
+ (&#39;below&#39;, 35),
+ (&#39;up&#39;, 34),
+ (&#39;would&#39;, 34),
+ (&#39;because&#39;, 33)]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>Est-ce une bonne idée d’enlever les stopwords ?</strong></p>
+<blockquote><p>blabla</p>
+</blockquote>
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13232,13 +13544,536 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dictonary</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">trait</span> <span class="ow">in</span> <span class="n">vocabulary</span><span class="p">:</span>
+    <span class="n">dictonary</span><span class="p">[</span><span class="n">trait</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">dictonary</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{&#39;in&#39;: False,
+ &#39;rates&#39;: False,
+ &#39;the&#39;: False,
+ &#39;and&#39;: False,
+ &#39;to&#39;: False,
+ &#39;of&#39;: False,
+ &#39;a&#39;: False,
+ &#39;on&#39;: False,
+ &#39;rate&#39;: False,
+ &#39;s&#39;: False,
+ &#39;%&#39;: False,
+ &#39;its&#39;: False,
+ &#39;payments&#39;: False,
+ &#39;that&#39;: False,
+ &#39;are&#39;: False,
+ &#39;has&#39;: False,
+ &#39;for&#39;: False,
+ &#39;with&#39;: False,
+ &#39;lower&#39;: False,
+ &#39;an&#39;: False,
+ &#39;is&#39;: False,
+ &#39;by&#39;: False,
+ &#39;have&#39;: False,
+ &#39;will&#39;: False,
+ &#39;at&#39;: False,
+ &#39;high&#39;: False,
+ &#39;from&#39;: False,
+ &#39;company&#39;: False,
+ &#39;their&#39;: False,
+ &#39;or&#39;: False,
+ &#39;annual&#39;: False,
+ &#39;us&#39;: False,
+ &#39;which&#39;: False,
+ &#39;short&#39;: False,
+ &#39;minority&#39;: False,
+ &#39;foreign&#39;: False,
+ &#39;said&#39;: False,
+ &#39;higher&#39;: False,
+ &#39;as&#39;: False,
+ &#39;bonds&#39;: False,
+ &#39;income&#39;: False,
+ &#39;nt&#39;: False,
+ &#39;other&#39;: False,
+ &#39;it&#39;: False,
+ &#39;pay&#39;: False,
+ &#39;be&#39;: False,
+ &#39;below&#39;: False,
+ &#39;up&#39;: False,
+ &#39;would&#39;: False,
+ &#39;because&#39;: False,
+ &#39;short-term&#39;: False,
+ &#39;was&#39;: False,
+ &#39;buying&#39;: False,
+ &#39;$&#39;: False,
+ &#39;also&#39;: False,
+ &#39;pursue&#39;: False,
+ &#39;but&#39;: False,
+ &#39;best&#39;: False,
+ &#39;he&#39;: False,
+ &#39;million&#39;: False,
+ &#39;debt&#39;: False,
+ &#39;some&#39;: False,
+ &#39;expressed&#39;: False,
+ &#39;about&#39;: False,
+ &#39;plus&#39;: False,
+ &#39;accrued&#39;: False,
+ &#39;due&#39;: False,
+ &#39;current&#39;: False,
+ &#39;net&#39;: False,
+ &#39;they&#39;: False,
+ &#39;before&#39;: False,
+ &#39;taxes&#39;: False,
+ &#39;public&#39;: False,
+ &#39;equity&#39;: False,
+ &#39;increase&#39;: False,
+ &#39;rose&#39;: False,
+ &#39;new&#39;: False,
+ &#39;--&#39;: False,
+ &#39;payment&#39;: False,
+ &#39;expense&#39;: False,
+ &#39;investor&#39;: False,
+ &#39;his&#39;: False,
+ &#39;than&#39;: False,
+ &#39;were&#39;: False,
+ &#39;year&#39;: False,
+ &#39;principal&#39;: False,
+ &#39;had&#39;: False,
+ &#39;any&#39;: False,
+ &#39;mr&#39;: False,
+ &#39;not&#39;: False,
+ &#39;says&#39;: False,
+ &#39;business&#39;: False,
+ &#39;this&#39;: False,
+ &#39;own&#39;: False,
+ &#39;down&#39;: False,
+ &#39;costs&#39;: False,
+ &#39;rise&#39;: False,
+ &#39;national&#39;: False,
+ &#39;fall&#39;: False,
+ &#39;no&#39;: False,
+ &#39;raise&#39;: False,
+ &#39;decline&#39;: False,
+ &#39;may&#39;: False,
+ &#39;if&#39;: False,
+ &#39;bank&#39;: False,
+ &#39;certain&#39;: False,
+ &#39;oil&#39;: False,
+ &#39;drop&#39;: False,
+ &#39;domestic&#39;: False,
+ &#39;cut&#39;: False,
+ &#39;make&#39;: False,
+ &#39;inflation&#39;: False,
+ &#39;reserve&#39;: False,
+ &#39;could&#39;: False,
+ &#39;much&#39;: False,
+ &#39;been&#39;: False,
+ &#39;uk&#39;: False,
+ &#39;over&#39;: False,
+ &#39;paid&#39;: False,
+ &#39;german&#39;: False,
+ &#39;investors&#39;: False,
+ &#39;more&#39;: False,
+ &#39;only&#39;: False,
+ &#39;among&#39;: False,
+ &#39;last&#39;: False,
+ &#39;corp&#39;: False,
+ &#39;all&#39;: False,
+ &#39;government&#39;: False,
+ &#39;market&#39;: False,
+ &#39;financial&#39;: False,
+ &#39;federal&#39;: False,
+ &#39;controlling&#39;: False,
+ &#39;15&#39;: False,
+ &#39;raised&#39;: False,
+ &#39;cash&#39;: False,
+ &#39;japanese&#39;: False,
+ &#39;;&#39;: False,
+ &#39;possible&#39;: False,
+ &#39;including&#39;: False,
+ &#39;tax&#39;: False,
+ &#39;changes&#39;: False,
+ &#39;sold&#39;: False,
+ &#39;key&#39;: False,
+ &#39;reduce&#39;: False,
+ &#39;strong&#39;: False,
+ &#39;stocks&#39;: False,
+ &#39;our&#39;: False,
+ &#39;banks&#39;: False,
+ &#39;companies&#39;: False,
+ &#39;earnings&#39;: False,
+ &#39;conflict&#39;: False,
+ &#39;fell&#39;: False,
+ &#39;paying&#39;: False,
+ &#39;loans&#39;: False,
+ &#39;further&#39;: False,
+ &#39;securities&#39;: False,
+ &#39;funds&#39;: False,
+ &#39;those&#39;: False,
+ &#39;bill&#39;: False,
+ &#39;speculation&#39;: False,
+ &#39;rising&#39;: False,
+ &#39;when&#39;: False,
+ &#39;10&#39;: False,
+ &#39;open&#39;: False,
+ &#39;price&#39;: False,
+ &#39;depreciation&#39;: False,
+ &#39;expenses&#39;: False,
+ &#39;most&#39;: False,
+ &#39;british&#39;: False,
+ &#39;attracted&#39;: False,
+ &#39;acquiring&#39;: False,
+ &#39;remain&#39;: False,
+ &#39;real&#39;: False,
+ &#39;such&#39;: False,
+ &#39;holding&#39;: False,
+ &#39;shareholders&#39;: False,
+ &#39;move&#39;: False,
+ &#39;long-term&#39;: False,
+ &#39;group&#39;: False,
+ &#39;50&#39;: False,
+ &#39;raising&#39;: False,
+ &#39;west&#39;: False,
+ &#39;average&#39;: False,
+ &#39;soon&#39;: False,
+ &#39;increases&#39;: False,
+ &#39;failed&#39;: False,
+ &#39;growing&#39;: False,
+ &#39;making&#39;: False,
+ &#39;general&#39;: False,
+ &#39;stock&#39;: False,
+ &#39;since&#39;: False,
+ &#39;jaguar&#39;: False,
+ &#39;big&#39;: False,
+ &#39;:&#39;: False,
+ &#39;after&#39;: False,
+ &#39;low&#39;: False,
+ &#39;personal&#39;: False,
+ &#39;amount&#39;: False,
+ &#39;do&#39;: False,
+ &#39;protect&#39;: False,
+ &#39;sell&#39;: False,
+ &#39;sale&#39;: False,
+ &#39;voting&#39;: False,
+ &#39;property&#39;: False,
+ &#39;acquire&#39;: False,
+ &#39;options&#39;: False,
+ &#39;boost&#39;: False,
+ &#39;bring&#39;: False,
+ &#39;fed&#39;: False,
+ &#39;continue&#39;: False,
+ &#39;margin&#39;: False,
+ &#39;little&#39;: False,
+ &#39;great&#39;: False,
+ &#39;issues&#39;: False,
+ &#39;estate&#39;: False,
+ &#39;generally&#39;: False,
+ &#39;already&#39;: False,
+ &#39;special&#39;: False,
+ &#39;recent&#39;: False,
+ &#39;then&#39;: False,
+ &#39;week&#39;: False,
+ &#39;can&#39;: False,
+ &#39;economy&#39;: False,
+ &#39;allowing&#39;: False,
+ &#39;between&#39;: False,
+ &#39;20&#39;: False,
+ &#39;include&#39;: False,
+ &#39;insurance&#39;: False,
+ &#39;60&#39;: False,
+ &#39;billion&#39;: False,
+ &#39;wo&#39;: False,
+ &#39;fees&#39;: False,
+ &#39;falling&#39;: False,
+ &#39;dividends&#39;: False,
+ &#39;american&#39;: False,
+ &#39;shown&#39;: False,
+ &#39;corporate&#39;: False,
+ &#39;there&#39;: False,
+ &#39;board&#39;: False,
+ &#39;)&#39;: False,
+ &#39;while&#39;: False,
+ &#39;&amp;&#39;: False,
+ &#39;protecting&#39;: False,
+ &#39;economic&#39;: False,
+ &#39;let&#39;: False,
+ &#39;1&#39;: False,
+ &#39;gas&#39;: False,
+ &#39;number&#39;: False,
+ &#39;working&#39;: False,
+ &#39;position&#39;: False,
+ &#39;majority&#39;: False,
+ &#39;primarily&#39;: False,
+ &#39;where&#39;: False,
+ &#39;reduced&#39;: False,
+ &#39;cost&#39;: False,
+ &#39;margins&#39;: False,
+ &#39;now&#39;: False,
+ &#39;international&#39;: False,
+ &#39;showed&#39;: False,
+ &#39;generated&#39;: False,
+ &#39;so&#39;: False,
+ &#39;expressions&#39;: False,
+ &#39;institutional&#39;: False,
+ &#39;lack&#39;: False,
+ &#39;soviet&#39;: False,
+ &#39;consumer&#39;: False,
+ &#39;back&#39;: False,
+ &#39;shares&#39;: False,
+ &#39;against&#39;: False,
+ &#39;one&#39;: False,
+ &#39;takeover&#39;: False,
+ &#39;keeping&#39;: False,
+ &#39;traders&#39;: False,
+ &#39;coming&#39;: False,
+ &#39;less&#39;: False,
+ &#39;time&#39;: False,
+ &#39;acquired&#39;: False,
+ &#39;conflicts&#39;: False,
+ &#39;set&#39;: False,
+ &#39;represent&#39;: False,
+ &#39;policy&#39;: False,
+ &#39;allow&#39;: False,
+ &#39;1989&#39;: False,
+ &#39;half&#39;: False,
+ &#39;brewing&#39;: False,
+ &#39;profit&#39;: False,
+ &#39;otc&#39;: False,
+ &#39;month&#39;: False,
+ &#39;cellular&#39;: False,
+ &#39;supply&#39;: False,
+ &#39;concern&#39;: False,
+ &#39;currently&#39;: False,
+ &#39;exchange&#39;: False,
+ &#39;base&#39;: False,
+ &#39;par&#39;: False,
+ &#39;until&#39;: False,
+ &#39;money&#39;: False,
+ &#39;caused&#39;: False,
+ &#39;lowering&#39;: False,
+ &#39;bundesbank&#39;: False,
+ &#39;meet&#39;: False,
+ &#39;again&#39;: False,
+ &#39;small&#39;: False,
+ &#39;remained&#39;: False,
+ &#39;mortgage&#39;: False,
+ &#39;unlikely&#39;: False,
+ &#39;first&#39;: False,
+ &#39;substantial&#39;: False,
+ &#39;especially&#39;: False,
+ &#39;though&#39;: False,
+ &#39;later&#39;: False,
+ &#39;european&#39;: False,
+ &#39;helped&#39;: False,
+ &#39;lost&#39;: False,
+ &#39;limited&#39;: False,
+ &#39;two&#39;: False,
+ &#39;many&#39;: False,
+ &#39;renewed&#39;: False,
+ &#39;express&#39;: False,
+ &#39;very&#39;: False,
+ &#39;customers&#39;: False,
+ &#39;might&#39;: False,
+ &#39;still&#39;: False,
+ &#39;gains&#39;: False,
+ &#39;europe&#39;: False,
+ &#39;who&#39;: False,
+ &#39;western&#39;: False,
+ &#39;businesses&#39;: False,
+ &#39;additional&#39;: False,
+ &#39;expected&#39;: False,
+ &#39;notes&#39;: False,
+ &#39;selling&#39;: False,
+ &#39;continued&#39;: False,
+ &#39;ownership&#39;: False,
+ &#39;increased&#39;: False,
+ &#39;family&#39;: False,
+ &#39;inc&#39;: False,
+ &#39;{&#39;: False,
+ &#39;whose&#39;: False,
+ &#39;three&#39;: False,
+ &#39;should&#39;: False,
+ &#39;consumers&#39;: False,
+ &#39;concerns&#39;: False,
+ &#39;banking&#39;: False,
+ &#39;britain&#39;: False,
+ &#39;represents&#39;: False,
+ &#39;remaining&#39;: False,
+ &#39;625&#39;: False,
+ &#39;climbed&#39;: False,
+ &#39;columbia&#39;: False,
+ &#39;obligations&#39;: False,
+ &#39;14&#39;: False,
+ &#39;lowered&#39;: False,
+ &#39;sept&#39;: False,
+ &#39;nearly&#39;: False,
+ &#39;likely&#39;: False,
+ &#39;outlook&#39;: False,
+ &#39;charges&#39;: False,
+ &#39;relatively&#39;: False,
+ &#39;years&#39;: False,
+ &#39;missed&#39;: False,
+ &#39;(&#39;: False,
+ &#39;ease&#39;: False,
+ &#39;germany&#39;: False,
+ &#39;dollar&#39;: False,
+ &#39;priced&#39;: False,
+ &#39;june&#39;: False,
+ &#39;show&#39;: False,
+ &#39;co&#39;: False,
+ &#39;revive&#39;: False,
+ &#39;despite&#39;: False,
+ &#39;gold&#39;: False,
+ &#39;instead&#39;: False,
+ &#39;metals&#39;: False,
+ &#39;precious&#39;: False,
+ &#39;keen&#39;: False,
+ &#39;received&#39;: False,
+ &#39;declined&#39;: False,
+ &#39;buyers&#39;: False,
+ &#39;parties&#39;: False,
+ &#39;considerable&#39;: False,
+ &#39;through&#39;: False,
+ &#39;lot&#39;: False,
+ &#39;pushed&#39;: False,
+ &#39;stir&#39;: False,
+ &#39;being&#39;: False,
+ &#39;clients&#39;: False,
+ &#39;expect&#39;: False,
+ &#39;never&#39;: False,
+ &#39;taken&#39;: False,
+ &#39;major&#39;: False,
+ &#39;support&#39;: False,
+ &#39;partnership&#39;: False,
+ &#39;local&#39;: False,
+ &#39;stake&#39;: False,
+ &#39;out&#39;: False,
+ &#39;difference&#39;: False,
+ &#39;increasing&#39;: False,
+ &#39;franchise&#39;: False,
+ &#39;bond&#39;: False,
+ &#39;immediate&#39;: False,
+ &#39;both&#39;: False,
+ &#39;enough&#39;: False,
+ &#39;}&#39;: False,
+ &#39;magazines&#39;: False,
+ &#39;common&#39;: False,
+ &#39;put&#39;: False,
+ &#39;advantage&#39;: False,
+ &#39;country&#39;: False,
+ &#39;important&#39;: False,
+ &#39;united&#39;: False,
+ &#39;holds&#39;: False,
+ &#39;manufacturing&#39;: False,
+ &#39;extraordinary&#39;: False,
+ &#39;products&#39;: False,
+ &#39;australian&#39;: False,
+ &#39;declining&#39;: False,
+ &#39;prices&#39;: False,
+ &#39;25&#39;: False,
+ &#39;nasdaq&#39;: False,
+ &#39;reported&#39;: False,
+ &#39;total&#39;: False,
+ &#39;large&#39;: False,
+ &#39;jumped&#39;: False,
+ &#39;biggest&#39;: False,
+ &#39;6&#39;: False,
+ &#39;just&#39;: False,
+ &#39;industrial&#39;: False,
+ &#39;city&#39;: False,
+ &#39;telephone&#39;: False,
+ &#39;electronics&#39;: False,
+ &#39;contract&#39;: False,
+ &#39;least&#39;: False,
+ &#39;12&#39;: False,
+ &#39;resulting&#39;: False,
+ &#39;swap&#39;: False,
+ &#39;direction&#39;: False,
+ &#39;coverage&#39;: False,
+ &#39;owed&#39;: False,
+ &#39;loan&#39;: False,
+ &#39;true&#39;: False,
+ &#39;drive&#39;: False,
+ &#39;expects&#39;: False,
+ &#39;made&#39;: False,
+ &#39;must&#39;: False,
+ &#39;losses&#39;: False,
+ &#39;during&#39;: False,
+ &#39;overdue&#39;: False,
+ &#39;unpaid&#39;: False,
+ &#39;fixed&#39;: False,
+ &#39;earned&#39;: False,
+ &#39;serial&#39;: False,
+ &#39;credit&#39;: False,
+ &#39;accruing&#39;: False,
+ &#39;savings&#39;: False,
+ &#39;deductibility&#39;: False,
+ &#39;postpone&#39;: False,
+ &#39;change&#39;: False,
+ &#39;fears&#39;: False,
+ &#39;push&#39;: False,
+ &#39;pushing&#39;: False,
+ &#39;use&#39;: False,
+ &#39;toward&#39;: False,
+ &#39;helping&#39;: False,
+ &#39;attract&#39;: False,
+ &#39;drum&#39;: False,
+ &#39;environment&#39;: False,
+ &#39;under&#39;: False,
+ &#39;g&#39;: False,
+ &#39;congress&#39;: False,
+ &#39;drew&#39;: False,
+ &#39;auto&#39;: False,
+ &#39;absence&#39;: False,
+ &#39;beyond&#39;: False,
+ &#39;cutting&#39;: False,
+ &#39;level&#39;: False,
+ &#39;these&#39;: False,
+ &#39;financing&#39;: False,
+ &#39;maker&#39;: False,
+ &#39;abroad&#39;: False,
+ &#39;well&#39;: False,
+ &#39;sparked&#39;: False,
+ &#39;fresh&#39;: False,
+ &#39;addition&#39;: False,
+ &#39;what&#39;: False,
+ &#39;nation&#39;: False,
+ &#39;did&#39;: False,
+ &#39;growth&#39;: False,
+ &#39;potential&#39;: False,
+ &#39;hotels&#39;: False,
+ &#39;broad&#39;: False,
+ &#39;them&#39;: False,
+ &#39;offers&#39;: False,
+ &#39;prompted&#39;: False,
+ &#39;motor&#39;: False,
+ &#39;ago&#39;: False,
+ &#39;share&#39;: False,
+ &#39;even&#39;: False,
+ &#39;investment&#39;: False,
+ &#39;leave&#39;: False}</pre>
+</div>
+
+</div>
+
 </div>
 </div>
 
