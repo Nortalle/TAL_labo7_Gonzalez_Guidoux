@@ -13157,6 +13157,7 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">nltk.tokenize</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">random</span>
 </pre></div>
 
     </div>
@@ -13502,28 +13503,12 @@ nombre de mots différents : 2274
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="4.-Parcourir-&#224;-nouveau-les-tokenized_sentences-et-pour-chaque-phrase-cr&#233;er-un-couple-(dictionnaire,-sens),-o&#249;-le-dictionnaire-regroupe-les-traits-et-leurs-valeurs,-et-le-sens-est-un-nombre-de-1-&#224;-6-indiquant-le-sens-de-interest.-Les-couples-pour-toutes-les-phrases-seront-rassembl&#233;s-dans-une-liste-appel&#233;e-feature_sets.">4. Parcourir &#224; nouveau les <code>tokenized_sentences</code> et pour chaque phrase cr&#233;er un couple (dictionnaire, sens), o&#249; le dictionnaire regroupe les traits et leurs valeurs, et le sens est un nombre de 1 &#224; 6 indiquant le sens de interest. Les couples pour toutes les phrases seront rassembl&#233;s dans une liste appel&#233;e <code>feature_sets</code>.<a class="anchor-link" href="#4.-Parcourir-&#224;-nouveau-les-tokenized_sentences-et-pour-chaque-phrase-cr&#233;er-un-couple-(dictionnaire,-sens),-o&#249;-le-dictionnaire-regroupe-les-traits-et-leurs-valeurs,-et-le-sens-est-un-nombre-de-1-&#224;-6-indiquant-le-sens-de-interest.-Les-couples-pour-toutes-les-phrases-seront-rassembl&#233;s-dans-une-liste-appel&#233;e-feature_sets.">&#182;</a></h4>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="4.1-Prendre-mod&#232;le-sur-https://www.nltk.org/book/ch06.html-(d&#233;but-du-1.2)">4.1 Prendre mod&#232;le sur <a href="https://www.nltk.org/book/ch06.html">https://www.nltk.org/book/ch06.html</a> (d&#233;but du 1.2)<a class="anchor-link" href="#4.1-Prendre-mod&#232;le-sur-https://www.nltk.org/book/ch06.html-(d&#233;but-du-1.2)">&#182;</a></h5>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="4.2-Pour-le-dictionnaire,-il-faut-cr&#233;er-un-trait-pour-chaque-mot-de-vocabulary,-et-examiner-si-ce-mot-est-pr&#233;sent-dans-une-fen&#234;tre-de-taille-window_size-autour-de-l&#8217;occurrence-de-interest-:-si-oui,-le-trait-est-True,-sinon-il-est-False.-Par-exemple,-on-aboutit-&#224;-:-{'contains(the)':-False,-'contains(,)':-True,-'contains(rates)':-True,-&#8230;}.">4.2 Pour le dictionnaire, il faut cr&#233;er un trait pour chaque mot de vocabulary, et examiner si ce mot est pr&#233;sent dans une fen&#234;tre de taille window_size autour de l&#8217;occurrence de interest : si oui, le trait est True, sinon il est False. Par exemple, on aboutit &#224; : {'contains(the)': False, 'contains(,)': True, 'contains(rates)': True, &#8230;}.<a class="anchor-link" href="#4.2-Pour-le-dictionnaire,-il-faut-cr&#233;er-un-trait-pour-chaque-mot-de-vocabulary,-et-examiner-si-ce-mot-est-pr&#233;sent-dans-une-fen&#234;tre-de-taille-window_size-autour-de-l&#8217;occurrence-de-interest-:-si-oui,-le-trait-est-True,-sinon-il-est-False.-Par-exemple,-on-aboutit-&#224;-:-{'contains(the)':-False,-'contains(,)':-True,-'contains(rates)':-True,-&#8230;}.">&#182;</a></h5>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="4.3-Ajouter-aussi-le-trait-&#8216;word0&#8217;-qui-note-si-l&#8217;occurrence-est-interest-ou-interests-(pluriel).">4.3 Ajouter aussi le trait &#8216;word0&#8217; qui note si l&#8217;occurrence est interest ou interests (pluriel).<a class="anchor-link" href="#4.3-Ajouter-aussi-le-trait-&#8216;word0&#8217;-qui-note-si-l&#8217;occurrence-est-interest-ou-interests-(pluriel).">&#182;</a></h5>
+<h4 id="4.-Parcourir-&#224;-nouveau-les-tokenized_sentences-et-pour-chaque-phrase-cr&#233;er-un-couple-(dictionnaire,-sens),-o&#249;-le-dictionnaire-regroupe-les-traits-et-leurs-valeurs,-et-le-sens-est-un-nombre-de-1-&#224;-6-indiquant-le-sens-de-interest.-Les-couples-pour-toutes-les-phrases-seront-rassembl&#233;s-dans-une-liste-appel&#233;e-feature_sets.">4. Parcourir &#224; nouveau les <code>tokenized_sentences</code> et pour chaque phrase cr&#233;er un couple (dictionnaire, sens), o&#249; le dictionnaire regroupe les traits et leurs valeurs, et le sens est un nombre de 1 &#224; 6 indiquant le sens de interest. Les couples pour toutes les phrases seront rassembl&#233;s dans une liste appel&#233;e <code>feature_sets</code>.<a class="anchor-link" href="#4.-Parcourir-&#224;-nouveau-les-tokenized_sentences-et-pour-chaque-phrase-cr&#233;er-un-couple-(dictionnaire,-sens),-o&#249;-le-dictionnaire-regroupe-les-traits-et-leurs-valeurs,-et-le-sens-est-un-nombre-de-1-&#224;-6-indiquant-le-sens-de-interest.-Les-couples-pour-toutes-les-phrases-seront-rassembl&#233;s-dans-une-liste-appel&#233;e-feature_sets.">&#182;</a></h4><ul>
+<li>Prendre modèle sur <a href="https://www.nltk.org/book/ch06.html">https://www.nltk.org/book/ch06.html</a> (début du 1.2)</li>
+<li>Pour le dictionnaire, il faut créer un trait pour chaque mot de vocabulary, et examiner si ce mot est présent dans une fenêtre de taille window_size autour de l’occurrence de interest : si oui, le trait est True, sinon il est False. Par exemple, on aboutit à : {'contains(the)': False, 'contains(,)': True, 'contains(rates)': True, …}.</li>
+<li>Ajouter aussi le trait ‘word0’ qui note si l’occurrence est interest ou interests (pluriel).</li>
+</ul>
+
 </div>
 </div>
 </div>
@@ -13575,11 +13560,11 @@ nombre de mots différents : 2274
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_set</span> <span class="o">=</span> <span class="p">[]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_sets</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="k">for</span> <span class="n">sentence</span> <span class="ow">in</span> <span class="n">tokenized_sentences</span><span class="p">:</span>
-    <span class="n">feature_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gender_features</span><span class="p">(</span><span class="n">sentence</span><span class="p">))</span>
-<span class="nb">len</span><span class="p">(</span><span class="n">feature_set</span><span class="p">)</span>
+    <span class="n">feature_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gender_features</span><span class="p">(</span><span class="n">sentence</span><span class="p">))</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13610,36 +13595,19 @@ nombre de mots différents : 2274
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
 <h5 id="4.3-Combien-d&#8217;occurrences-pour-chaque-sens-de-interest-y-a-t-il-dans-feature_sets-?">4.3 Combien d&#8217;occurrences pour chaque sens de interest y a-t-il dans feature_sets ?<a class="anchor-link" href="#4.3-Combien-d&#8217;occurrences-pour-chaque-sens-de-interest-y-a-t-il-dans-feature_sets-?">&#182;</a></h5>
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">occurrences</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="n">somme</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">feature_set</span> <span class="ow">in</span> <span class="n">feature_sets</span><span class="p">:</span>
+    <span class="n">occurrences</span><span class="p">[</span><span class="n">feature_set</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
 </pre></div>
 
     </div>
@@ -13647,26 +13615,123 @@ nombre de mots différents : 2274
 </div>
 
 </div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">occurrences</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[12]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>{1: 361, 2: 11, 3: 66, 4: 178, 5: 500, 6: 1252}</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="5.-Diviser-les-donn&#233;es-de-feature_sets-en-deux-sous-ensembles-:-l&#8217;un-comportant-80%-des-donn&#233;es-est-le-train_set,-et-l&#8217;autre-(20%)-est-le-test_set.-Attention,-il-faut-respecter-deux-conditions-:">5. Diviser les donn&#233;es de feature_sets en deux sous-ensembles : l&#8217;un comportant 80% des donn&#233;es est le train_set, et l&#8217;autre (20%) est le test_set. Attention, il faut respecter deux conditions :<a class="anchor-link" href="#5.-Diviser-les-donn&#233;es-de-feature_sets-en-deux-sous-ensembles-:-l&#8217;un-comportant-80%-des-donn&#233;es-est-le-train_set,-et-l&#8217;autre-(20%)-est-le-test_set.-Attention,-il-faut-respecter-deux-conditions-:">&#182;</a></h4>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="5.-Diviser-les-donn&#233;es-de-feature_sets-en-deux-sous-ensembles-:-l&#8217;un-comportant-80%-des-donn&#233;es-est-le-train_set,-et-l&#8217;autre-(20%)-est-le-test_set.-Attention,-il-faut-respecter-deux-conditions-:">5. Diviser les donn&#233;es de feature_sets en deux sous-ensembles : l&#8217;un comportant 80% des donn&#233;es est le <code>train_set</code>, et l&#8217;autre (20%) est le <code>test_set</code>. Attention, il faut respecter deux conditions :<a class="anchor-link" href="#5.-Diviser-les-donn&#233;es-de-feature_sets-en-deux-sous-ensembles-:-l&#8217;un-comportant-80%-des-donn&#233;es-est-le-train_set,-et-l&#8217;autre-(20%)-est-le-test_set.-Attention,-il-faut-respecter-deux-conditions-:">&#182;</a></h4><ul>
+<li>Mélanger avec shuffle() les occurrences avant de prendre les 80% premières pour le <code>train_set</code>et les 20% restantes dans le test_set.</li>
+<li>Chaque sens doit être présent dans les mêmes proportions dans train_set et dans test_set (donc il faut faire la division de manière séparée pour chaque sens).</li>
+</ul>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">separate_train_test</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">):</span>
+
+    <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">)</span>
+
+    <span class="n">occurence_in_train</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="n">train_set</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">test_set</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">feature_set</span> <span class="ow">in</span> <span class="n">feature_sets</span><span class="p">:</span>
+        <span class="n">current_sens</span> <span class="o">=</span> <span class="n">feature_set</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">occurence_in_train</span><span class="p">[</span><span class="n">current_sens</span><span class="p">]</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">occurrences</span><span class="p">[</span><span class="n">current_sens</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">):</span>
+            <span class="n">train_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_set</span><span class="p">)</span>
+            <span class="n">occurence_in_train</span><span class="p">[</span><span class="n">current_sens</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">test_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_set</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">train_set</span><span class="p">,</span> <span class="n">test_set</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_set</span><span class="p">,</span> <span class="n">test_set</span> <span class="o">=</span> <span class="n">separate_train_test</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Il y a </span><span class="si">{}</span><span class="s2"> couples dans train et </span><span class="si">{}</span><span class="s2"> dans test&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_set</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_set</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Il y a 1896 couples dans train et 472 dans test
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="6.-Entra&#238;ner-un-classifieur-de-type-NaiveBayesClassifier-de-NLTK-sur-train_set">6. Entra&#238;ner un classifieur de type <code>NaiveBayesClassifier</code> de <code>NLTK</code> sur <code>train_set</code><a class="anchor-link" href="#6.-Entra&#238;ner-un-classifieur-de-type-NaiveBayesClassifier-de-NLTK-sur-train_set">&#182;</a></h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">classifier</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">NaiveBayesClassifier</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_set</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13677,59 +13742,38 @@ nombre de mots différents : 2274
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="5.1-Chaque-sens-doit-&#234;tre-pr&#233;sent-dans-les-m&#234;mes-proportions-dans-train_set-et-dans-test_set-(donc-il-faut-faire-la-division-de-mani&#232;re-s&#233;par&#233;e-pour-chaque-sens).">5.1 Chaque sens doit &#234;tre pr&#233;sent dans les m&#234;mes proportions dans train_set et dans test_set (donc il faut faire la division de mani&#232;re s&#233;par&#233;e pour chaque sens).<a class="anchor-link" href="#5.1-Chaque-sens-doit-&#234;tre-pr&#233;sent-dans-les-m&#234;mes-proportions-dans-train_set-et-dans-test_set-(donc-il-faut-faire-la-division-de-mani&#232;re-s&#233;par&#233;e-pour-chaque-sens).">&#182;</a></h5>
+<p><strong>puis le tester sur les données de <code>test_set</code>. Quelle est la précision (<code>accuracy</code>) atteinte ?</strong></p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;La précision atteinte est de </span><span class="si">{:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nltk</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">test_set</span><span class="p">)))</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h5 id="5.2-M&#233;langer-avec-shuffle()-les-occurrences-avant-de-prendre-les-80%-premi&#232;res-pour-le-train_setet-les-20%-restantes-dans-le-test_set.">5.2 M&#233;langer avec shuffle() les occurrences avant de prendre les 80% premi&#232;res pour le <code>train_set</code>et les 20% restantes dans le test_set.<a class="anchor-link" href="#5.2-M&#233;langer-avec-shuffle()-les-occurrences-avant-de-prendre-les-80%-premi&#232;res-pour-le-train_setet-les-20%-restantes-dans-le-test_set.">&#182;</a></h5>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
+<div class="output_wrapper">
+<div class="output">
 
-    </div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>La précision atteinte est de 0.87
+</pre>
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h4 id="6.-Entra&#238;ner-un-classifieur-de-type-NaiveBayesClassifier-de-NLTK-sur-train_set,-puis-le-tester-sur-les-donn&#233;es-de-test_set.-Quelle-est-la-pr&#233;cision-(accuracy)-atteinte-?">6. Entra&#238;ner un classifieur de type NaiveBayesClassifier de NLTK sur train_set, puis le tester sur les donn&#233;es de test_set. Quelle est la pr&#233;cision (accuracy) atteinte ?<a class="anchor-link" href="#6.-Entra&#238;ner-un-classifieur-de-type-NaiveBayesClassifier-de-NLTK-sur-train_set,-puis-le-tester-sur-les-donn&#233;es-de-test_set.-Quelle-est-la-pr&#233;cision-(accuracy)-atteinte-?">&#182;</a></h4>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-    </div>
 </div>
 </div>
 
@@ -13743,16 +13787,102 @@ nombre de mots différents : 2274
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">train_test</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">):</span>
+    <span class="n">train_set</span><span class="p">,</span> <span class="n">test_set</span> <span class="o">=</span> <span class="n">separate_train_test</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">)</span>
+    <span class="n">classifier</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">NaiveBayesClassifier</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">train_set</span><span class="p">)</span>
+    <span class="n">accuracy</span> <span class="o">=</span> <span class="n">nltk</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">test_set</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">accuracy</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">N_iteration</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">accuracies</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_iteration</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-----itération n°</span><span class="si">{}</span><span class="s2">-----&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iteration</span><span class="p">))</span>
+    <span class="n">accuracies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_test</span><span class="p">(</span><span class="n">feature_sets</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>-----itération n°0-----
+-----itération n°1-----
+-----itération n°2-----
+-----itération n°3-----
+-----itération n°4-----
+-----itération n°5-----
+-----itération n°6-----
+-----itération n°7-----
+-----itération n°8-----
+-----itération n°9-----
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;la moyenne des scores obtenus est de </span><span class="si">{:.2f}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">accuracies</span><span class="p">)))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>la moyenne des scores obtenus est de 0.88 
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+
+</div>
+</div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13763,10 +13893,13 @@ nombre de mots différents : 2274
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">windows_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">11</span><span class="p">]</span>
+<span class="n">vocabulary_sizes</span> <span class="o">=</span><span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
+
+<span class="c1"># bla bla bla double boucle</span>
 </pre></div>
 
     </div>
